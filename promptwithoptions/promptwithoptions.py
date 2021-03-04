@@ -235,7 +235,7 @@ def validate_arguments(
                     )
         else:
             for default_part in default_parts:
-                if get_option(options, default_part) is None:
+                if get_option(normalise_options(options), default_part) is None:
                     invalid_parts.append(default_part)
             if invalid_parts:
                 raise TypeError(
@@ -439,7 +439,7 @@ def promptwithoptions(
             if data_type is bool:
                 response = normalise_bool_response(default)
             else:
-                response = str(default)
+                response = split_escaped_comma_separated_string(str(default))
             break
         if response in ("", "-"):
             response = ""
