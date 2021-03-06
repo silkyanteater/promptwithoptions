@@ -6,6 +6,12 @@ from promptwithoptions import (
     promptwithoptions,
 )
 
+def test_set_prompt_defaults_prompt():
+    reset_defaults()
+    with pytest.raises(TypeError):
+        set_prompt_defaults(prompt=8)
+    set_prompt_defaults(prompt="who")
+
 def test_set_prompt_defaults_options():
     reset_defaults()
     with pytest.raises(TypeError):

@@ -19,7 +19,7 @@ my_options = ('one', 'two', 'three')
 
 set_prompt_defaults(options_line_color=clr_yellow, options_number_color=clr_l_green, input_line_color=clr_blue, confirm_line_color=clr_l_blue)
 
-promptwithoptions('How many', my_options, default=1, show_confirmation=True)
+promptwithoptions('How many', options=my_options, default=1, show_confirmation=True)
 ```
 
 ![](promptwithoptions.png)
@@ -27,6 +27,8 @@ promptwithoptions('How many', my_options, default=1, show_confirmation=True)
 ### Available settings
 
 These are all optional named arguments (in this order) of `set_prompt_defaults` and `promptwithoptions`.
+
+`prompt`: prompt string - this appears as a question with a `?` appended as long as `hide_questionmark is not True`
 
 `options`: list of available options, without this 
 
@@ -57,8 +59,8 @@ These are all optional named arguments (in this order) of `set_prompt_defaults` 
 ### Setting and resetting defaults
 
 `set_prompt_defaults()` can be called multiple times.  
-A default value can be removed (set back to None) when explicitely given like `set_prompt_defaults(allow_empty=None)`.
-If need argument defaults can be reset by calling `reset_defaults` (`from promptwithoptions import reset_defaults`).
+A default value can be removed (set back to None) when `_None_` is passed down like `set_prompt_defaults(allow_empty="_None_")`.
+Argument defaults can be removed at once by calling `reset_defaults` (`from promptwithoptions import reset_defaults`).
 
 ### Options list
 

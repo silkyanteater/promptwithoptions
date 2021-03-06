@@ -4,6 +4,7 @@ from collections.abc import Iterable
 
 
 DEFAULTS = {
+    "prompt": None,
     "options": None,
     "data_type": None,
     "default": None,
@@ -160,6 +161,7 @@ def split_escaped_comma_separated_string(the_string):
 
 def validate_arguments(
     *,
+    prompt=None,
     options=None,
     data_type=None,
     default=None,
@@ -174,6 +176,10 @@ def validate_arguments(
     input_line_color=None,
     confirm_line_color=None,
 ):
+    if prompt is not None:
+        if not isinstance(prompt, str):
+            raise TypeError("prompt: string expected")
+
     if options is not None:
         if not isinstance(options, Iterable) or isinstance(options, str):
             raise TypeError("options: iterable expected")
@@ -274,65 +280,114 @@ def validate_arguments(
 
 
 def set_prompt_defaults(
-    *,
-    options="_none_",
-    data_type="_none_",
-    default="_none_",
-    allow_empty="_none_",
-    allow_multiple="_none_",
-    show_confirmation="_none_",
-    hide_key="_none_",
-    hide_questionmark="_none_",
-    no_interaction="_none_",
-    options_line_color="_none_",
-    options_number_color="_none_",
-    input_line_color="_none_",
-    confirm_line_color="_none_",
+    prompt=None,
+    options=None,
+    data_type=None,
+    default=None,
+    allow_empty=None,
+    allow_multiple=None,
+    show_confirmation=None,
+    hide_key=None,
+    hide_questionmark=None,
+    no_interaction=None,
+    options_line_color=None,
+    options_number_color=None,
+    input_line_color=None,
+    confirm_line_color=None,
 ):
     _DEFAULTS = dict()
-    _DEFAULTS["options"] = DEFAULTS["options"] if options == "_none_" else options
-    _DEFAULTS["data_type"] = (
-        DEFAULTS["data_type"] if data_type == "_none_" else data_type
+    _DEFAULTS["prompt"] = (
+        None if prompt == "_None_" else DEFAULTS["prompt"] if prompt is None else prompt
     )
-    _DEFAULTS["default"] = DEFAULTS["default"] if default == "_none_" else default
+    _DEFAULTS["options"] = (
+        None
+        if options == "_None_"
+        else DEFAULTS["options"]
+        if options is None
+        else options
+    )
+    _DEFAULTS["data_type"] = (
+        None
+        if data_type == "_None_"
+        else DEFAULTS["data_type"]
+        if data_type is None
+        else data_type
+    )
+    _DEFAULTS["default"] = (
+        None
+        if default == "_None_"
+        else DEFAULTS["default"]
+        if default is None
+        else default
+    )
     _DEFAULTS["allow_empty"] = (
-        DEFAULTS["allow_empty"] if allow_empty == "_none_" else allow_empty
+        None
+        if allow_empty == "_None_"
+        else DEFAULTS["allow_empty"]
+        if allow_empty is None
+        else allow_empty
     )
     _DEFAULTS["allow_multiple"] = (
-        DEFAULTS["allow_multiple"] if allow_multiple == "_none_" else allow_multiple
+        None
+        if allow_multiple == "_None_"
+        else DEFAULTS["allow_multiple"]
+        if allow_multiple is None
+        else allow_multiple
     )
     _DEFAULTS["show_confirmation"] = (
-        DEFAULTS["show_confirmation"]
-        if show_confirmation == "_none_"
+        None
+        if show_confirmation == "_None_"
+        else DEFAULTS["show_confirmation"]
+        if show_confirmation is None
         else show_confirmation
     )
-    _DEFAULTS["hide_key"] = DEFAULTS["hide_key"] if hide_key == "_none_" else hide_key
+    _DEFAULTS["hide_key"] = (
+        None
+        if hide_key == "_None_"
+        else DEFAULTS["hide_key"]
+        if hide_key is None
+        else hide_key
+    )
     _DEFAULTS["hide_questionmark"] = (
-        DEFAULTS["hide_questionmark"]
-        if hide_questionmark == "_none_"
+        None
+        if hide_questionmark == "_None_"
+        else DEFAULTS["hide_questionmark"]
+        if hide_questionmark is None
         else hide_questionmark
     )
     _DEFAULTS["no_interaction"] = (
-        DEFAULTS["no_interaction"] if no_interaction == "_none_" else no_interaction
+        None
+        if no_interaction == "_None_"
+        else DEFAULTS["no_interaction"]
+        if no_interaction is None
+        else no_interaction
     )
     _DEFAULTS["options_line_color"] = (
-        DEFAULTS["options_line_color"]
-        if options_line_color == "_none_"
+        None
+        if options_line_color == "_None_"
+        else DEFAULTS["options_line_color"]
+        if options_line_color is None
         else options_line_color
     )
     _DEFAULTS["options_number_color"] = (
-        DEFAULTS["options_number_color"]
-        if options_number_color == "_none_"
+        None
+        if options_number_color == "_None_"
+        else DEFAULTS["options_number_color"]
+        if options_number_color is None
         else options_number_color
     )
     _DEFAULTS["input_line_color"] = (
-        DEFAULTS["input_line_color"]
-        if input_line_color == "_none_"
+        None
+        if input_line_color == "_None_"
+        else DEFAULTS["input_line_color"]
+        if input_line_color is None
         else input_line_color
     )
     _DEFAULTS["confirm_line_color"] = (
-        DEFAULTS["confirm_line_color"]
-        if confirm_line_color == "_none_"
+        None
+        if confirm_line_color == "_None_"
+        else DEFAULTS["confirm_line_color"]
+        if confirm_line_color is None
         else confirm_line_color
     )
     validate_arguments(**_DEFAULTS)
@@ -346,63 +401,117 @@ def reset_defaults():
 
 
 def promptwithoptions(
-    prompt,
-    options="_none_",
-    data_type="_none_",
-    default="_none_",
-    allow_empty="_none_",
-    allow_multiple="_none_",
-    show_confirmation="_none_",
-    hide_key="_none_",
-    hide_questionmark="_none_",
-    no_interaction="_none_",
-    options_line_color="_none_",
-    options_number_color="_none_",
-    input_line_color="_none_",
-    confirm_line_color="_none_",
+    prompt=None,
+    options=None,
+    data_type=None,
+    default=None,
+    allow_empty=None,
+    allow_multiple=None,
+    show_confirmation=None,
+    hide_key=None,
+    hide_questionmark=None,
+    no_interaction=None,
+    options_line_color=None,
+    options_number_color=None,
+    input_line_color=None,
+    confirm_line_color=None,
 ):
-    options = DEFAULTS["options"] if options == "_none_" else options
-    data_type = DEFAULTS["data_type"] if data_type == "_none_" else data_type
-    default = DEFAULTS["default"] if default == "_none_" else default
-    allow_empty = DEFAULTS["allow_empty"] if allow_empty == "_none_" else allow_empty
+    prompt = (
+        None if prompt == "_None_" else DEFAULTS["prompt"] if prompt is None else prompt
+    )
+    options = (
+        None
+        if options == "_None_"
+        else DEFAULTS["options"]
+        if options is None
+        else options
+    )
+    data_type = (
+        None
+        if data_type == "_None_"
+        else DEFAULTS["data_type"]
+        if data_type is None
+        else data_type
+    )
+    default = (
+        None
+        if default == "_None_"
+        else DEFAULTS["default"]
+        if default is None
+        else default
+    )
+    allow_empty = (
+        None
+        if allow_empty == "_None_"
+        else DEFAULTS["allow_empty"]
+        if allow_empty is None
+        else allow_empty
+    )
     allow_multiple = (
-        DEFAULTS["allow_multiple"] if allow_multiple == "_none_" else allow_multiple
+        None
+        if allow_multiple == "_None_"
+        else DEFAULTS["allow_multiple"]
+        if allow_multiple is None
+        else allow_multiple
     )
     show_confirmation = (
-        DEFAULTS["show_confirmation"]
-        if show_confirmation == "_none_"
+        None
+        if show_confirmation == "_None_"
+        else DEFAULTS["show_confirmation"]
+        if show_confirmation is None
         else show_confirmation
     )
-    hide_key = DEFAULTS["hide_key"] if hide_key == "_none_" else hide_key
+    hide_key = (
+        None
+        if hide_key == "_None_"
+        else DEFAULTS["hide_key"]
+        if hide_key is None
+        else hide_key
+    )
     hide_questionmark = (
-        DEFAULTS["hide_questionmark"]
-        if hide_questionmark == "_none_"
+        None
+        if hide_questionmark == "_None_"
+        else DEFAULTS["hide_questionmark"]
+        if hide_questionmark is None
         else hide_questionmark
     )
     no_interaction = (
-        DEFAULTS["no_interaction"] if no_interaction == "_none_" else no_interaction
+        None
+        if no_interaction == "_None_"
+        else DEFAULTS["no_interaction"]
+        if no_interaction is None
+        else no_interaction
     )
     options_line_color = (
-        DEFAULTS["options_line_color"]
-        if options_line_color == "_none_"
+        None
+        if options_line_color == "_None_"
+        else DEFAULTS["options_line_color"]
+        if options_line_color is None
         else options_line_color
     )
     options_number_color = (
-        DEFAULTS["options_number_color"]
-        if options_number_color == "_none_"
+        None
+        if options_number_color == "_None_"
+        else DEFAULTS["options_number_color"]
+        if options_number_color is None
         else options_number_color
     )
     input_line_color = (
-        DEFAULTS["input_line_color"]
-        if input_line_color == "_none_"
+        None
+        if input_line_color == "_None_"
+        else DEFAULTS["input_line_color"]
+        if input_line_color is None
         else input_line_color
     )
     confirm_line_color = (
-        DEFAULTS["confirm_line_color"]
-        if confirm_line_color == "_none_"
+        None
+        if confirm_line_color == "_None_"
+        else DEFAULTS["confirm_line_color"]
+        if confirm_line_color is None
         else confirm_line_color
     )
     validate_arguments(
+        prompt=prompt,
         options=options,
         data_type=data_type,
         default=default,

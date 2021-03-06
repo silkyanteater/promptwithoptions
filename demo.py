@@ -30,6 +30,7 @@ default = 'ExternalLinkBanner'
 widget = dict()
 
 set_prompt_defaults(show_confirmation=True, options_line_color=CLR.blue, options_number_color=CLR.yellow, input_line_color=CLR.l_blue, confirm_line_color=CLR.l_cyan)
+set_prompt_defaults(show_confirmation='_None_')
 
 choice('Widget Type', 'Type', widget, options, default)
 print(widget)
