@@ -22,7 +22,7 @@ class CLR(object):
     l_cyan = '\u001b[36;1m'
     l_white = '\u001b[37;1m'
 
-def choice(field, key, widget, options, default = None):
+def choice(field, key, widget, options = None, default = None):
     widget[key] = promptwithoptions(field, options=options, default=default)
 
 options = ('InternalLinkBanner', 'ExternalLinkBanner', 'OddsBanner', 'Cardbanner', 'OTCCouponDetail')
@@ -30,7 +30,10 @@ default = 'ExternalLinkBanner'
 widget = dict()
 
 set_prompt_defaults(show_confirmation=True, options_line_color=CLR.blue, options_number_color=CLR.yellow, input_line_color=CLR.l_blue, confirm_line_color=CLR.l_cyan)
-set_prompt_defaults(show_confirmation='_None_')
+# set_prompt_defaults(show_confirmation='_None_')
 
 choice('Widget Type', 'Type', widget, options, default)
+
+choice('Name', 'name', widget, default = '')
+
 print(widget)

@@ -68,7 +68,7 @@ def get_formatted_prompt(
                 default_str = "y/n"
             formatted_prompt = f"{formatted_prompt}({default_str}) "
         else:
-            formatted_prompt = f"{formatted_prompt}({default}) "
+            formatted_prompt = f"{formatted_prompt}(%s) " % (default if default != '' else "''", )
     return cformat(formatted_prompt, input_line_color)
 
 
@@ -111,9 +111,9 @@ def print_formatted_confirmation(
 ):
     if hide_questionmark is True:
         # we suppose the user provides it so we're not adding ':'
-        cprint(f"{prompt} {response}", confirm_line_color)
+        cprint(f"{prompt} %s" % (response if response != '' else "''", ), confirm_line_color)
     else:
-        cprint(f"{prompt}: {response}", confirm_line_color)
+        cprint(f"{prompt}: %s" % (response if response != '' else "''", ), confirm_line_color)
 
 
 def input_value_to_bool(value):
@@ -535,7 +535,7 @@ def promptwithoptions(
                 get_formatted_prompt(
                     prompt, data_type, default, hide_questionmark, input_line_color
                 )
-                + str(default)
+                + (str(default) if default != '' else "''")
             )
             response = ""
         else:
