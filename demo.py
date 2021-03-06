@@ -22,8 +22,9 @@ class CLR(object):
     l_cyan = '\u001b[36;1m'
     l_white = '\u001b[37;1m'
 
-def choice(field, key, widget, options = None, default = None):
-    widget[key] = promptwithoptions(field, options=options, default=default)
+def choice(field, key, widget, options = None, default = None, allow_multiple = None):
+    widget[key] = promptwithoptions(field, options=options, default=default, allow_multiple=allow_multiple)
+    print()
 
 options = ('InternalLinkBanner', 'ExternalLinkBanner', 'OddsBanner', 'Cardbanner', 'OTCCouponDetail')
 default = 'ExternalLinkBanner'
@@ -34,6 +35,10 @@ set_prompt_defaults(show_confirmation=True, options_line_color=CLR.blue, options
 
 choice('Widget Type', 'Type', widget, options, default)
 
-choice('Name', 'name', widget, default = '')
+choice('Name', 'Name', widget, default = '')
+
+zone_options = {1: 'Header', 2: 'Main area', 3: 'Footer', '': 'Default'}
+
+choice('Zones', 'Zones', widget, options=zone_options, default=(1,2,''), allow_multiple=True)
 
 print(widget)

@@ -68,15 +68,18 @@ def get_formatted_prompt(
                 default_str = "y/n"
             formatted_prompt = f"{formatted_prompt}({default_str}) "
         else:
-            formatted_prompt = f"{formatted_prompt}(%s) " % (default if default != '' else "''", )
+            if isinstance(default, Iterable) and not isinstance(default, str):
+                formatted_prompt = f"{formatted_prompt}(%s) " % (', '.join(str(x) if x != '' else "''" for x in default), )
+            else:
+                formatted_prompt = f"{formatted_prompt}(%s) " % (default if default != '' else "''", )
     return cformat(formatted_prompt, input_line_color)
 
 
 def get_option_str(option, hide_key=None):
     if hide_key is True and len(option) > 1:
-        return " - ".join(str(o) for o in option[1:])
+        return " - ".join(str(o) if o != '' else "''" for o in option[1:])
     else:
-        return " - ".join(str(o) for o in option)
+        return " - ".join(str(o) if o != '' else "''" for o in option)
 
 
 def get_formatted_option(
@@ -547,6 +550,8 @@ def promptwithoptions(
         if response == "" and default is not None:
             if data_type is bool:
                 response = normalise_bool_response(default)
+            elif isinstance(default, Iterable) and not isinstance(default, str):
+                response = tuple(map(str, default))
             else:
                 response = split_escaped_comma_separated_string(str(default))
             break
