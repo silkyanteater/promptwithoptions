@@ -76,7 +76,7 @@ def get_formatted_prompt(
     formatted_prompt += " "
     if data_type is bool:
         if isinstance(default, Iterable) and not isinstance(default, str):
-            normalised_bool_default = tuple("Y" if d is True else "N" if d is False else normalise_value_to_YN(d) for d in default)
+            normalised_bool_default = tuple(map(normalise_value_to_YN, default))
         else:
             normalised_bool_default = (str(default), )
         new_normalised_bool_default = tuple()
@@ -477,19 +477,16 @@ def promptwithoptions(
             )
         if response == "" and default is not None:
             if isinstance(default, Iterable) and not isinstance(default, str):
-                default_response = tuple("Y" if d is True else "N" if d is False else normalise_value_to_YN(d) for d in default)
+                default_response = tuple(default)
             else:
                 default_response = (str(default), )
+            new_default_response = tuple()
             if data_type is bool:
-                new_default_response = tuple()
-                for response_item in default_response:
-                    new_default_response += tuple(normalise_value_to_YN(x) for x in split_escaped_comma_separated_string(response_item))
-                default_response = new_default_response
+                new_default_response = tuple(normalise_value_to_YN(x) for x in default_response)
             else:
-                if allow_multiple is True:
-                    default_response = split_escaped_comma_separated_string(str(default))
-                else:
-                    default_response = (str(default),)
+                for response_item in default_response:
+                    new_default_response += split_escaped_comma_separated_string(str(response_item))
+            default_response = new_default_response
             if allow_multiple is not True and len(default_response) > 1:
                 response = None
                 clear_back_last_input()

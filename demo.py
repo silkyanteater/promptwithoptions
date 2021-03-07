@@ -38,11 +38,13 @@ set_prompt_defaults(show_confirmation=True)
 # set_prompt_defaults(hide_key=True, hide_mandatory_sign=True, hide_multiple_choice_sign=True)
 # set_prompt_defaults(show_confirmation='_None_')
 
+zone_options = {1: 'Header', 2: 'Main area', 3: 'Footer', '': 'Default'}
+
+choice('Zones', 'Zones', widget, options=zone_options, default=(1,2), allow_multiple=True)
+
 choice('Widget Type', 'Type', widget, options, default)
 
-choice('Name', 'Name', widget, default='asdf,asdf', allow_empty=True)
-
-zone_options = {1: 'Header', 2: 'Main area', 3: 'Footer', '': 'Default'}
+choice('Name', 'Name', widget, default='asdf,asd', allow_empty=True, allow_multiple=True)
 
 choice('Zones', 'Zones', widget, options=zone_options, default=(1,2,''), allow_multiple=True)
 
@@ -55,7 +57,7 @@ set_prompt_defaults(data_type=bool)
 
 choice('Whether', 'Whether', widget)
 choice('Bools', 'Bools', widget, allow_multiple=True)
-# choice('Bool Series', 'BoolSeries', widget, default=('y', 'y'), allow_multiple=True, allow_repetitive=True)
+choice('Bool Series', 'BoolSeries', widget, default=('y', 'y'), allow_multiple=True, allow_repetitive=True)
 choice('Bool Series', 'BoolSeries', widget, default='y, y', allow_multiple=True, allow_repetitive=True)
 
 print(widget)
