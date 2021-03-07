@@ -491,7 +491,7 @@ def promptwithoptions(
                 response = None
                 clear_back_last_input()
                 continue
-            response = default_response
+            response = default_response or ''
             break
         if response in ("", "-"):
             response = ""
