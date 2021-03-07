@@ -56,14 +56,16 @@ def get_option(options, ref):
 
 def get_formatted_prompt(
     prompt,
+    options,
     data_type,
     default,
-    allow_empty=None,
-    allow_multiple=None,
-    hide_questionmark=None,
-    hide_mandatory_sign=None,
-    hide_multiple_choice_sign=None,
-    input_line_color=None,
+    allow_empty,
+    allow_multiple,
+    hide_key,
+    hide_questionmark,
+    hide_mandatory_sign,
+    hide_multiple_choice_sign,
+    input_line_color,
 ):
     formatted_prompt = f"{prompt}%s" % ("" if hide_questionmark is True else "?",)
     if allow_empty is not True and hide_mandatory_sign is not True:
@@ -83,13 +85,28 @@ def get_formatted_prompt(
     else:
         if default is not None:
             if isinstance(default, Iterable) and not isinstance(default, str):
-                formatted_prompt = f"{formatted_prompt}(%s) " % (
-                    ", ".join(str(x) if x != "" else "''" for x in default),
-                )
+                if options is None:
+                    formatted_prompt = f"{formatted_prompt}(%s) " % (
+                        ", ".join(str(x) if x != "" else "''" for x in default),
+                    )
+                else:
+                    formatted_prompt = f"{formatted_prompt}(%s) " % (
+                        ", ".join(
+                            get_option_str(
+                                get_option(options, str(x)), hide_key=hide_key
+                            )
+                            for x in default
+                        ),
+                    )
             else:
-                formatted_prompt = f"{formatted_prompt}(%s) " % (
-                    default if default != "" else "''",
-                )
+                if options is None:
+                    formatted_prompt = f"{formatted_prompt}(%s) " % (
+                        default if default != "" else "''",
+                    )
+                else:
+                    formatted_prompt = f"{formatted_prompt}(%s) " % (
+                        get_option_str(get_option(options, default), hide_key=hide_key),
+                    )
     return cformat(formatted_prompt, input_line_color)
 
 
@@ -404,10 +421,12 @@ def promptwithoptions(
             print(
                 get_formatted_prompt(
                     prompt,
+                    options,
                     data_type,
                     default,
                     allow_empty,
                     allow_multiple,
+                    hide_key,
                     hide_questionmark,
                     hide_mandatory_sign,
                     hide_multiple_choice_sign,
@@ -420,10 +439,12 @@ def promptwithoptions(
             response = input(
                 get_formatted_prompt(
                     prompt,
+                    options,
                     data_type,
                     default,
                     allow_empty,
                     allow_multiple,
+                    hide_key,
                     hide_questionmark,
                     hide_mandatory_sign,
                     hide_multiple_choice_sign,

@@ -73,7 +73,7 @@ If there are keys and values only a key is returned at the end. In that case key
 
 ### Multiple Choice
 
-When `allow_multiple is True` then multiple values can be added separated by `,`s.
+When `allow_multiple is True` then multiple values can be added if separated by `,`s.
 Commas can be escaped by quotation marks similarly to CSV escape rules.
 
 ### Entering empty value when default is given

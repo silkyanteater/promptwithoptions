@@ -23,8 +23,8 @@ class CLR(object):
     l_cyan = '\u001b[36;1m'
     l_white = '\u001b[37;1m'
 
-def choice(field, key = None, widget = None, options = None, default = None, allow_empty = None, allow_multiple = None):
-    result = promptwithoptions(field, options=options, default=default, allow_empty=allow_empty, allow_multiple=allow_multiple)
+def choice(field, key = None, widget = None, options = None, default = None, allow_empty = None, allow_multiple = None, hide_key = None):
+    result = promptwithoptions(field, options=options, default=default, allow_empty=allow_empty, allow_multiple=allow_multiple, hide_key=hide_key)
     if widget is not None:
         widget[key] = result
     print()
@@ -46,8 +46,9 @@ zone_options = {1: 'Header', 2: 'Main area', 3: 'Footer', '': 'Default'}
 
 choice('Zones', 'Zones', widget, options=zone_options, default=(1,2,''), allow_multiple=True)
 
-reset_prompt_defaults()
-set_prompt_defaults()
+choice('Zones', 'Zones', widget, options=zone_options, default=(1,2,''), allow_multiple=True, hide_key=True)
+
+# reset_prompt_defaults()
 set_prompt_defaults(data_type=bool)
 
 choice('Whether', 'Whether', widget)
