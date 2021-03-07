@@ -10,6 +10,7 @@ ARGUMENT_NAMES = (
     "default",
     "allow_empty",
     "allow_multiple",
+    "allow_repetitive",
     "show_confirmation",
     "hide_key",
     "hide_questionmark",
@@ -74,14 +75,26 @@ def get_formatted_prompt(
         formatted_prompt += "…"
     formatted_prompt += " "
     if data_type is bool:
-        default_bool = input_value_to_bool(default)
-        if default_bool is True:
-            default_str = "Y/n"
-        elif default_bool is False:
-            default_str = "y/N"
+        if isinstance(default, Iterable) and not isinstance(default, str):
+            normalised_bool_default = tuple("Y" if d is True else "N" if d is False else normalise_value_to_YN(d) for d in default)
         else:
-            default_str = "y/n"
-        formatted_prompt = f"{formatted_prompt}({default_str}) "
+            normalised_bool_default = (str(default), )
+        new_normalised_bool_default = tuple()
+        for response_item in normalised_bool_default:
+            new_normalised_bool_default += tuple(normalise_value_to_YN(x) for x in split_escaped_comma_separated_string(response_item))
+        normalised_bool_default = new_normalised_bool_default
+        if len(normalised_bool_default) == 1:
+            if normalised_bool_default[0] == 'Y':
+                bool_choice = "Y/n"
+            elif normalised_bool_default[0] == 'N':
+                bool_choice = "y/N"
+            else:
+                bool_choice = "y/n"
+        else:
+            bool_choice = "y/n"
+        formatted_prompt = f"{formatted_prompt}({bool_choice}) "
+        if len(normalised_bool_default) > 1:
+            formatted_prompt = f"{formatted_prompt}({','.join(normalised_bool_default)}) "
     else:
         if default is not None:
             if isinstance(default, Iterable) and not isinstance(default, str):
@@ -159,18 +172,10 @@ def print_formatted_confirmation(
         )
 
 
-def input_value_to_bool(value):
+def normalise_value_to_YN(value):
     if value is True or (isinstance(value, str) and value.lower() in ("y", "yes")):
-        return True
-    elif value is False or (isinstance(value, str) and value.lower() in ("n", "no")):
-        return False
-
-
-def normalise_bool_response(response):
-    value_bool = input_value_to_bool(response)
-    if value_bool is True:
         return "Y"
-    elif value_bool is False:
+    elif value is False or (isinstance(value, str) and value.lower() in ("n", "no")):
         return "N"
 
 
@@ -224,6 +229,7 @@ def validate_arguments(
     default=None,
     allow_empty=None,
     allow_multiple=None,
+    allow_repetitive=None,
     show_confirmation=None,
     hide_key=None,
     hide_questionmark=None,
@@ -275,7 +281,7 @@ def validate_arguments(
                 for part in default
             )
         elif isinstance(default, bool):
-            default_parts = (normalise_bool_response(default),)
+            default_parts = (normalise_value_to_YN(default),)
         else:
             default_parts = (
                 "Y" if default is True else "N" if default is False else str(default),
@@ -284,12 +290,24 @@ def validate_arguments(
             raise TypeError(
                 f"default: empty value is invalid when allow_empty is not True"
             )
+        if allow_multiple is not True and len(default_parts) > 1:
+            raise TypeError(
+                f"default: multiple values found when allow_multiple is not True"
+            )
+        if allow_repetitive is not True:
+            if options is not None:
+                normalised_default_parts = tuple(get_option(normalise_options(options), part) for part in default_parts)
+                if len(normalised_default_parts) != len(set(normalised_default_parts)):
+                    raise TypeError(f"default: repetitive elements found when allow_repetitive is not True")
+            else:
+                if len(default_parts) != len(set(default_parts)):
+                    raise TypeError(f"default: repetitive elements found when allow_repetitive is not True")
         invalid_parts = list()
         if options is None:
             if data_type is not None:
                 if data_type is bool:
                     for default_part in default_parts:
-                        if input_value_to_bool(default_part) is None:
+                        if normalise_value_to_YN(default_part) is None:
                             invalid_parts.append(default_part)
                 else:
                     for default_part in default_parts:
@@ -311,10 +329,13 @@ def validate_arguments(
                 )
 
     if allow_empty is not None and not isinstance(allow_empty, bool):
-        raise TypeError("allow_multiple: bool expected")
+        raise TypeError("allow_empty: bool expected")
 
     if allow_multiple is not None and not isinstance(allow_multiple, bool):
         raise TypeError("allow_multiple: bool expected")
+
+    if allow_repetitive is not None and not isinstance(allow_repetitive, bool):
+        raise TypeError("allow_repetitive: bool expected")
 
     if show_confirmation is not None and not isinstance(show_confirmation, bool):
         raise TypeError("show_confirmation: bool expected")
@@ -356,6 +377,7 @@ def set_prompt_defaults(
     default=None,
     allow_empty=None,
     allow_multiple=None,
+    allow_repetitive=None,
     show_confirmation=None,
     hide_key=None,
     hide_questionmark=None,
@@ -383,6 +405,7 @@ def promptwithoptions(
     default=None,
     allow_empty=None,
     allow_multiple=None,
+    allow_repetitive=None,
     show_confirmation=None,
     hide_key=None,
     hide_questionmark=None,
@@ -402,6 +425,7 @@ def promptwithoptions(
     default = arguments["default"]
     allow_empty = arguments["allow_empty"]
     allow_multiple = arguments["allow_multiple"]
+    allow_repetitive = arguments["allow_repetitive"]
     show_confirmation = arguments["show_confirmation"]
     hide_key = arguments["hide_key"]
     hide_questionmark = arguments["hide_questionmark"]
@@ -452,15 +476,25 @@ def promptwithoptions(
                 )
             )
         if response == "" and default is not None:
+            if isinstance(default, Iterable) and not isinstance(default, str):
+                default_response = tuple("Y" if d is True else "N" if d is False else normalise_value_to_YN(d) for d in default)
+            else:
+                default_response = (str(default), )
             if data_type is bool:
-                response = normalise_bool_response(default)
-            elif isinstance(default, Iterable) and not isinstance(default, str):
-                response = tuple(map(str, default))
+                new_default_response = tuple()
+                for response_item in default_response:
+                    new_default_response += tuple(normalise_value_to_YN(x) for x in split_escaped_comma_separated_string(response_item))
+                default_response = new_default_response
             else:
                 if allow_multiple is True:
-                    response = split_escaped_comma_separated_string(str(default))
+                    default_response = split_escaped_comma_separated_string(str(default))
                 else:
-                    response = (str(default),)
+                    default_response = (str(default),)
+            if allow_multiple is not True and len(default_response) > 1:
+                response = None
+                clear_back_last_input()
+                continue
+            response = default_response
             break
         if response in ("", "-"):
             response = ""
@@ -483,18 +517,22 @@ def promptwithoptions(
             clear_back_last_input()
             continue
         if data_type is bool:
-            continue_while = False
+            continue_loop = False
             normalised_response = list()
             for response_item in response:
-                response_item_bool = normalise_bool_response(response_item)
+                response_item_bool = normalise_value_to_YN(response_item)
                 if response_item_bool is None:
-                    response = None
-                    clear_back_last_input()
-                    continue_while = True
+                    continue_loop = True
                     break
                 else:
-                    normalised_response.append(response_item_bool)
-            if continue_while is True:
+                    if allow_repetitive is not True and response_item_bool in normalised_response:
+                        continue_loop = True
+                        break
+                    else:
+                        normalised_response.append(response_item_bool)
+            if continue_loop is True:
+                response = None
+                clear_back_last_input()
                 continue
             else:
                 response = tuple(normalised_response)
@@ -508,20 +546,35 @@ def promptwithoptions(
                     response = None
                     clear_back_last_input()
                     continue
+            if allow_repetitive is not True and len(response) != len(set(response)):
+                response = None
+                clear_back_last_input()
+                continue
             break
         else:
             if len(response) > 1 and allow_multiple is not True:
                 response = None
                 clear_back_last_input()
                 continue
+            response_options = list()
             for response_item in response:
-                if get_option(options, response_item) is None:
+                response_option = get_option(options, response_item)
+                if response_option is None:
                     response = None
                     clear_back_last_input()
                     continue
+                else:
+                    response_options.append(response_option)
+            if allow_repetitive is not True and len(response_options) != len(set(response_options)):
+                response = None
+                clear_back_last_input()
+                continue
     if options is None:
         response_value = response
-        response_value_str = ", ".join(response_value)
+        if data_type is bool:
+            response_value_str = ", ".join('Yes' if v == 'Y' else 'No' if v == 'N' else 'N/A' for v in response_value)
+        else:
+            response_value_str = ", ".join(response_value)
     else:
         response_options = tuple(
             get_option(options, response_item) for response_item in response

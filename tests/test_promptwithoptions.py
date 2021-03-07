@@ -84,6 +84,12 @@ def test_set_prompt_defaults_allow_multiple():
         set_prompt_defaults(allow_multiple='x')
     set_prompt_defaults(allow_multiple=True)
 
+def test_set_prompt_defaults_allow_repetitive():
+    reset_prompt_defaults()
+    with pytest.raises(TypeError):
+        set_prompt_defaults(allow_repetitive='x')
+    set_prompt_defaults(allow_repetitive=True)
+
 def test_set_prompt_defaults_show_confirmation():
     reset_prompt_defaults()
     with pytest.raises(TypeError):

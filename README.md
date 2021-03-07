@@ -40,6 +40,8 @@ These are all optional named arguments (in this order) of `set_prompt_defaults` 
 
 `allow_multiple`: boolean, if True then comma-separated values are accepted and the return value is always a list (in fact a `tuple`)
 
+`allow_repetitive`: boolean, only considered if `options` are given and `allow_multiple is True` - if True then the same values can be added multiple times.
+
 `show_confirmation`: boolean, if True then the accepted input is reprinted with the selected option (if options are given)
 
 `hide_key`: boolean, if True the first item of each option doesn't get printed on the screen (if an option has multiple items like keys and values)
