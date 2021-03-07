@@ -3,22 +3,26 @@ import shlex
 from collections.abc import Iterable
 
 
-DEFAULTS = {
-    "prompt": None,
-    "options": None,
-    "data_type": None,
-    "default": None,
-    "allow_empty": None,
-    "allow_multiple": None,
-    "show_confirmation": None,
-    "hide_key": None,
-    "hide_questionmark": None,
-    "no_interaction": None,
-    "options_line_color": None,
-    "options_number_color": None,
-    "input_line_color": None,
-    "confirm_line_color": None,
-}
+ARGUMENT_NAMES = (
+    "prompt",
+    "options",
+    "data_type",
+    "default",
+    "allow_empty",
+    "allow_multiple",
+    "show_confirmation",
+    "hide_key",
+    "hide_questionmark",
+    "hide_mandatory_sign",
+    "hide_multiple_choice_sign",
+    "no_interaction",
+    "options_line_color",
+    "options_number_color",
+    "input_line_color",
+    "confirm_line_color",
+)
+
+DEFAULTS = dict()
 
 
 def cformat(text, color=None):
@@ -51,35 +55,49 @@ def get_option(options, ref):
 
 
 def get_formatted_prompt(
-    prompt, data_type, default, hide_questionmark=None, input_line_color=None
+    prompt,
+    data_type,
+    default,
+    allow_empty=None,
+    allow_multiple=None,
+    hide_questionmark=None,
+    hide_mandatory_sign=None,
+    hide_multiple_choice_sign=None,
+    input_line_color=None,
 ):
-    if hide_questionmark is True:
-        formatted_prompt = f"{prompt} "
-    else:
-        formatted_prompt = f"{prompt}? "
-    if default is not None:
-        if data_type is bool:
-            default_bool = input_value_to_bool(default)
-            if default_bool is True:
-                default_str = "Y/n"
-            elif default_bool is False:
-                default_str = "y/N"
-            else:
-                default_str = "y/n"
-            formatted_prompt = f"{formatted_prompt}({default_str}) "
+    formatted_prompt = f"{prompt}%s" % ("" if hide_questionmark is True else "?",)
+    if allow_empty is not True and hide_mandatory_sign is not True:
+        formatted_prompt += "*"
+    if allow_multiple is True and hide_multiple_choice_sign is not True:
+        formatted_prompt += "…"
+    formatted_prompt += " "
+    if data_type is bool:
+        default_bool = input_value_to_bool(default)
+        if default_bool is True:
+            default_str = "Y/n"
+        elif default_bool is False:
+            default_str = "y/N"
         else:
+            default_str = "y/n"
+        formatted_prompt = f"{formatted_prompt}({default_str}) "
+    else:
+        if default is not None:
             if isinstance(default, Iterable) and not isinstance(default, str):
-                formatted_prompt = f"{formatted_prompt}(%s) " % (', '.join(str(x) if x != '' else "''" for x in default), )
+                formatted_prompt = f"{formatted_prompt}(%s) " % (
+                    ", ".join(str(x) if x != "" else "''" for x in default),
+                )
             else:
-                formatted_prompt = f"{formatted_prompt}(%s) " % (default if default != '' else "''", )
+                formatted_prompt = f"{formatted_prompt}(%s) " % (
+                    default if default != "" else "''",
+                )
     return cformat(formatted_prompt, input_line_color)
 
 
 def get_option_str(option, hide_key=None):
     if hide_key is True and len(option) > 1:
-        return " - ".join(str(o) if o != '' else "''" for o in option[1:])
+        return " - ".join(str(o) if o != "" else "''" for o in option[1:])
     else:
-        return " - ".join(str(o) if o != '' else "''" for o in option)
+        return " - ".join(str(o) if o != "" else "''" for o in option)
 
 
 def get_formatted_option(
@@ -114,9 +132,14 @@ def print_formatted_confirmation(
 ):
     if hide_questionmark is True:
         # we suppose the user provides it so we're not adding ':'
-        cprint(f"{prompt} %s" % (response if response != '' else "''", ), confirm_line_color)
+        cprint(
+            f"{prompt} %s" % (response if response != "" else "''",), confirm_line_color
+        )
     else:
-        cprint(f"{prompt}: %s" % (response if response != '' else "''", ), confirm_line_color)
+        cprint(
+            f"{prompt}: %s" % (response if response != "" else "''",),
+            confirm_line_color,
+        )
 
 
 def input_value_to_bool(value):
@@ -162,6 +185,20 @@ def split_escaped_comma_separated_string(the_string):
         return None
 
 
+def resolve_defaults(locals, variable_names):
+    defaults = dict()
+    for variable_name in variable_names:
+        variable = locals[variable_name]
+        defaults[variable_name] = (
+            None
+            if variable == "_None_"
+            else DEFAULTS.get(variable_name)
+            if variable is None
+            else variable
+        )
+    return defaults
+
+
 def validate_arguments(
     *,
     prompt=None,
@@ -173,6 +210,8 @@ def validate_arguments(
     show_confirmation=None,
     hide_key=None,
     hide_questionmark=None,
+    hide_mandatory_sign=None,
+    hide_multiple_choice_sign=None,
     no_interaction=None,
     options_line_color=None,
     options_number_color=None,
@@ -225,6 +264,10 @@ def validate_arguments(
             raise TypeError(
                 f"default: multiple values found while allow_multiple is not True"
             )
+        if allow_empty is not True and len(default_parts) == 0:
+            raise TypeError(
+                f"default: empty value is invalid when allow_empty is not True"
+            )
         invalid_parts = list()
         if options is None:
             if data_type is not None:
@@ -266,6 +309,14 @@ def validate_arguments(
     if hide_questionmark is not None and not isinstance(hide_questionmark, bool):
         raise TypeError("hide_questionmark: bool expected")
 
+    if hide_mandatory_sign is not None and not isinstance(hide_mandatory_sign, bool):
+        raise TypeError("hide_mandatory_sign: bool expected")
+
+    if hide_multiple_choice_sign is not None and not isinstance(
+        hide_multiple_choice_sign, bool
+    ):
+        raise TypeError("hide_multiple_choice_sign: bool expected")
+
     if no_interaction is not None and not isinstance(no_interaction, bool):
         raise TypeError("no_interaction: bool expected")
 
@@ -292,115 +343,21 @@ def set_prompt_defaults(
     show_confirmation=None,
     hide_key=None,
     hide_questionmark=None,
+    hide_mandatory_sign=None,
+    hide_multiple_choice_sign=None,
     no_interaction=None,
     options_line_color=None,
     options_number_color=None,
     input_line_color=None,
     confirm_line_color=None,
 ):
-    _DEFAULTS = dict()
-    _DEFAULTS["prompt"] = (
-        None if prompt == "_None_" else DEFAULTS["prompt"] if prompt is None else prompt
-    )
-    _DEFAULTS["options"] = (
-        None
-        if options == "_None_"
-        else DEFAULTS["options"]
-        if options is None
-        else options
-    )
-    _DEFAULTS["data_type"] = (
-        None
-        if data_type == "_None_"
-        else DEFAULTS["data_type"]
-        if data_type is None
-        else data_type
-    )
-    _DEFAULTS["default"] = (
-        None
-        if default == "_None_"
-        else DEFAULTS["default"]
-        if default is None
-        else default
-    )
-    _DEFAULTS["allow_empty"] = (
-        None
-        if allow_empty == "_None_"
-        else DEFAULTS["allow_empty"]
-        if allow_empty is None
-        else allow_empty
-    )
-    _DEFAULTS["allow_multiple"] = (
-        None
-        if allow_multiple == "_None_"
-        else DEFAULTS["allow_multiple"]
-        if allow_multiple is None
-        else allow_multiple
-    )
-    _DEFAULTS["show_confirmation"] = (
-        None
-        if show_confirmation == "_None_"
-        else DEFAULTS["show_confirmation"]
-        if show_confirmation is None
-        else show_confirmation
-    )
-    _DEFAULTS["hide_key"] = (
-        None
-        if hide_key == "_None_"
-        else DEFAULTS["hide_key"]
-        if hide_key is None
-        else hide_key
-    )
-    _DEFAULTS["hide_questionmark"] = (
-        None
-        if hide_questionmark == "_None_"
-        else DEFAULTS["hide_questionmark"]
-        if hide_questionmark is None
-        else hide_questionmark
-    )
-    _DEFAULTS["no_interaction"] = (
-        None
-        if no_interaction == "_None_"
-        else DEFAULTS["no_interaction"]
-        if no_interaction is None
-        else no_interaction
-    )
-    _DEFAULTS["options_line_color"] = (
-        None
-        if options_line_color == "_None_"
-        else DEFAULTS["options_line_color"]
-        if options_line_color is None
-        else options_line_color
-    )
-    _DEFAULTS["options_number_color"] = (
-        None
-        if options_number_color == "_None_"
-        else DEFAULTS["options_number_color"]
-        if options_number_color is None
-        else options_number_color
-    )
-    _DEFAULTS["input_line_color"] = (
-        None
-        if input_line_color == "_None_"
-        else DEFAULTS["input_line_color"]
-        if input_line_color is None
-        else input_line_color
-    )
-    _DEFAULTS["confirm_line_color"] = (
-        None
-        if confirm_line_color == "_None_"
-        else DEFAULTS["confirm_line_color"]
-        if confirm_line_color is None
-        else confirm_line_color
-    )
+    _DEFAULTS = resolve_defaults(locals(), ARGUMENT_NAMES)
     validate_arguments(**_DEFAULTS)
-    for key in DEFAULTS:
-        DEFAULTS[key] = _DEFAULTS[key]
+    DEFAULTS.update(_DEFAULTS)
 
 
-def reset_defaults():
-    for key in DEFAULTS:
-        DEFAULTS[key] = None
+def reset_prompt_defaults():
+    DEFAULTS.clear()
 
 
 def promptwithoptions(
@@ -413,122 +370,33 @@ def promptwithoptions(
     show_confirmation=None,
     hide_key=None,
     hide_questionmark=None,
+    hide_mandatory_sign=None,
+    hide_multiple_choice_sign=None,
     no_interaction=None,
     options_line_color=None,
     options_number_color=None,
     input_line_color=None,
     confirm_line_color=None,
 ):
-    prompt = (
-        None if prompt == "_None_" else DEFAULTS["prompt"] if prompt is None else prompt
-    )
-    options = (
-        None
-        if options == "_None_"
-        else DEFAULTS["options"]
-        if options is None
-        else options
-    )
-    data_type = (
-        None
-        if data_type == "_None_"
-        else DEFAULTS["data_type"]
-        if data_type is None
-        else data_type
-    )
-    default = (
-        None
-        if default == "_None_"
-        else DEFAULTS["default"]
-        if default is None
-        else default
-    )
-    allow_empty = (
-        None
-        if allow_empty == "_None_"
-        else DEFAULTS["allow_empty"]
-        if allow_empty is None
-        else allow_empty
-    )
-    allow_multiple = (
-        None
-        if allow_multiple == "_None_"
-        else DEFAULTS["allow_multiple"]
-        if allow_multiple is None
-        else allow_multiple
-    )
-    show_confirmation = (
-        None
-        if show_confirmation == "_None_"
-        else DEFAULTS["show_confirmation"]
-        if show_confirmation is None
-        else show_confirmation
-    )
-    hide_key = (
-        None
-        if hide_key == "_None_"
-        else DEFAULTS["hide_key"]
-        if hide_key is None
-        else hide_key
-    )
-    hide_questionmark = (
-        None
-        if hide_questionmark == "_None_"
-        else DEFAULTS["hide_questionmark"]
-        if hide_questionmark is None
-        else hide_questionmark
-    )
-    no_interaction = (
-        None
-        if no_interaction == "_None_"
-        else DEFAULTS["no_interaction"]
-        if no_interaction is None
-        else no_interaction
-    )
-    options_line_color = (
-        None
-        if options_line_color == "_None_"
-        else DEFAULTS["options_line_color"]
-        if options_line_color is None
-        else options_line_color
-    )
-    options_number_color = (
-        None
-        if options_number_color == "_None_"
-        else DEFAULTS["options_number_color"]
-        if options_number_color is None
-        else options_number_color
-    )
-    input_line_color = (
-        None
-        if input_line_color == "_None_"
-        else DEFAULTS["input_line_color"]
-        if input_line_color is None
-        else input_line_color
-    )
-    confirm_line_color = (
-        None
-        if confirm_line_color == "_None_"
-        else DEFAULTS["confirm_line_color"]
-        if confirm_line_color is None
-        else confirm_line_color
-    )
-    validate_arguments(
-        prompt=prompt,
-        options=options,
-        data_type=data_type,
-        default=default,
-        allow_empty=allow_empty,
-        allow_multiple=allow_multiple,
-        show_confirmation=show_confirmation,
-        hide_key=hide_key,
-        hide_questionmark=hide_questionmark,
-        no_interaction=no_interaction,
-        options_line_color=options_line_color,
-        options_number_color=options_number_color,
-        input_line_color=input_line_color,
-        confirm_line_color=confirm_line_color,
-    )
+    arguments = resolve_defaults(locals(), ARGUMENT_NAMES)
+    validate_arguments(**arguments)
+    prompt = arguments["prompt"]
+    options = arguments["options"]
+    data_type = arguments["data_type"]
+    default = arguments["default"]
+    allow_empty = arguments["allow_empty"]
+    allow_multiple = arguments["allow_multiple"]
+    show_confirmation = arguments["show_confirmation"]
+    hide_key = arguments["hide_key"]
+    hide_questionmark = arguments["hide_questionmark"]
+    hide_mandatory_sign = arguments["hide_mandatory_sign"]
+    hide_multiple_choice_sign = arguments["hide_multiple_choice_sign"]
+    no_interaction = arguments["no_interaction"]
+    options_line_color = arguments["options_line_color"]
+    options_number_color = arguments["options_number_color"]
+    input_line_color = arguments["input_line_color"]
+    confirm_line_color = arguments["confirm_line_color"]
+
     options = normalise_options(options)
     print_formatted_options(options, hide_key, options_line_color, options_number_color)
     response = None
@@ -536,15 +404,31 @@ def promptwithoptions(
         if no_interaction is True and default is not None:
             print(
                 get_formatted_prompt(
-                    prompt, data_type, default, hide_questionmark, input_line_color
+                    prompt,
+                    data_type,
+                    default,
+                    allow_empty,
+                    allow_multiple,
+                    hide_questionmark,
+                    hide_mandatory_sign,
+                    hide_multiple_choice_sign,
+                    input_line_color,
                 )
-                + (str(default) if default != '' else "''")
+                + (str(default) if default != "" else "''")
             )
             response = ""
         else:
             response = input(
                 get_formatted_prompt(
-                    prompt, data_type, default, hide_questionmark, input_line_color
+                    prompt,
+                    data_type,
+                    default,
+                    allow_empty,
+                    allow_multiple,
+                    hide_questionmark,
+                    hide_mandatory_sign,
+                    hide_multiple_choice_sign,
+                    input_line_color,
                 )
             )
         if response == "" and default is not None:
@@ -564,38 +448,54 @@ def promptwithoptions(
             clear_back_last_input()
             continue
         response = split_escaped_comma_separated_string(response)
-        if response is None or len(response) == 0:
+        if (
+            response is None
+            or len(response) == 0
+            or (allow_multiple is not True and len(response) > 1)
+        ):
             response = None
             clear_back_last_input()
             continue
         if data_type is bool:
+            continue_while = False
+            normalised_response = list()
             for response_item in response:
-                response_item_bool = normalise_bool_response(response)
+                response_item_bool = normalise_bool_response(response_item)
                 if response_item_bool is None:
+                    response = None
+                    clear_back_last_input()
+                    continue_while = True
+                    break
+                else:
+                    normalised_response.append(response_item_bool)
+            if continue_while is True:
+                continue
+            else:
+                response = tuple(normalised_response)
+                break
+        if options is None:
+            if data_type is not None:
+                try:
+                    for response_item in response:
+                        data_type(response_item)
+                except:
+                    response = None
                     clear_back_last_input()
                     continue
             break
-        if options is None:
-            try:
-                for response_item in response:
-                    data_type(response_item)
-            except:
+        else:
+            if len(response) > 1 and allow_multiple is not True:
                 response = None
                 clear_back_last_input()
                 continue
-            break
-        else:
             for response_item in response:
                 if get_option(options, response_item) is None:
                     response = None
                     clear_back_last_input()
                     continue
     if options is None:
-        if len(response) == 1:
-            response_value = response[0]
-        else:
-            response_value = response
-        response_value_str = ", ".join(response)
+        response_value = response
+        response_value_str = ", ".join(response_value)
     else:
         response_options = tuple(
             get_option(options, response_item) for response_item in response
@@ -611,6 +511,6 @@ def promptwithoptions(
         print_formatted_confirmation(
             prompt, response_value_str, hide_questionmark, confirm_line_color
         )
-    if len(response_value) == 1:
+    if len(response_value) == 1 and allow_multiple is not True:
         response_value = response_value[0]
     return response_value

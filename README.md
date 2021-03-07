@@ -38,13 +38,17 @@ These are all optional named arguments (in this order) of `set_prompt_defaults` 
 
 `allow_empty`: boolean, if True then prompt doesn't repeat with empty input 
 
-`allow_multiple`: boolean, if True then comma-separated values are accepted
+`allow_multiple`: boolean, if True then comma-separated values are accepted and the return value is always a list (in fact a `tuple`)
 
 `show_confirmation`: boolean, if True then the accepted input is reprinted with the selected option (if options are given)
 
-`hide_key`: boolean, if True the first item of each option doesn't get printed on the screen
+`hide_key`: boolean, if True the first item of each option doesn't get printed on the screen (if an option has multiple items like keys and values)
 
 `hide_questionmark`: boolean, if True then '?' is not attached to prompt text (neither a ':' to the confirmation if shown)
+
+`hide_mandatory_sign`: boolean, if True then '*' doesn't appear after the question if `allow_empty is not True`
+
+`hide_multiple_choice_sign`: boolean, if True then '…' doesn't appear after the question if `allow_multiple is True`
 
 `no_interaction`: boolean, if True default is applied automatically (if given) and no input is required (this is to apply `--yes`)
 
@@ -69,4 +73,5 @@ If there are keys and values only a key is returned at the end. In that case key
 
 ### Entering empty value when default is given
 
-Use '-' to explicitely get empty even when default is given and `allow_empty=True`.
+Use '-' to explicitely get empty even when default is given and `allow_empty=True`.  
+Escape it as `'-'` if you need a literal hyphen.

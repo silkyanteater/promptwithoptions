@@ -1,5 +1,6 @@
 from promptwithoptions import (
     set_prompt_defaults,
+    reset_prompt_defaults,
     promptwithoptions,
 )
 
@@ -22,23 +23,34 @@ class CLR(object):
     l_cyan = '\u001b[36;1m'
     l_white = '\u001b[37;1m'
 
-def choice(field, key, widget, options = None, default = None, allow_multiple = None):
-    widget[key] = promptwithoptions(field, options=options, default=default, allow_multiple=allow_multiple)
+def choice(field, key = None, widget = None, options = None, default = None, allow_empty = None, allow_multiple = None):
+    result = promptwithoptions(field, options=options, default=default, allow_empty=allow_empty, allow_multiple=allow_multiple)
+    if widget is not None:
+        widget[key] = result
     print()
 
-options = ('InternalLinkBanner', 'ExternalLinkBanner', 'OddsBanner', 'Cardbanner', 'OTCCouponDetail')
-default = 'ExternalLinkBanner'
+options = ('Blue', 'Orange', 'White', 'Red', 'Green')
+default = 'Orange'
 widget = dict()
 
-set_prompt_defaults(show_confirmation=True, options_line_color=CLR.blue, options_number_color=CLR.yellow, input_line_color=CLR.l_blue, confirm_line_color=CLR.l_cyan)
+set_prompt_defaults(options_line_color=CLR.blue, options_number_color=CLR.yellow, input_line_color=CLR.l_blue, confirm_line_color=CLR.l_cyan)
+set_prompt_defaults(show_confirmation=True)
+# set_prompt_defaults(hide_key=True, hide_mandatory_sign=True, hide_multiple_choice_sign=True)
 # set_prompt_defaults(show_confirmation='_None_')
 
 choice('Widget Type', 'Type', widget, options, default)
 
-choice('Name', 'Name', widget, default = '')
+choice('Name', 'Name', widget, default = '', allow_empty=True)
 
 zone_options = {1: 'Header', 2: 'Main area', 3: 'Footer', '': 'Default'}
 
 choice('Zones', 'Zones', widget, options=zone_options, default=(1,2,''), allow_multiple=True)
+
+reset_prompt_defaults()
+set_prompt_defaults()
+set_prompt_defaults(data_type=bool)
+
+choice('Whether', 'Whether', widget)
+choice('Bools', 'Bools', widget, allow_multiple=True)
 
 print(widget)
