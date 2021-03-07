@@ -40,7 +40,7 @@ set_prompt_defaults(show_confirmation=True)
 
 choice('Widget Type', 'Type', widget, options, default)
 
-choice('Name', 'Name', widget, default = '', allow_empty=True)
+choice('Name', 'Name', widget, default='asdf,asdf', allow_empty=True)
 
 zone_options = {1: 'Header', 2: 'Main area', 3: 'Footer', '': 'Default'}
 

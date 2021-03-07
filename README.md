@@ -71,6 +71,11 @@ Argument defaults can be removed at once by calling `reset_defaults` (`from prom
 It's a plain list of strings, a list of keys and values or a dict.  
 If there are keys and values only a key is returned at the end. In that case keys can be stopped from printing by `hide_key`.
 
+### Multiple Choice
+
+When `allow_multiple is True` then multiple values can be added separated by `,`s.
+Commas can be escaped by quotation marks similarly to CSV escape rules.
+
 ### Entering empty value when default is given
 
 Use '-' to explicitely get empty even when default is given and `allow_empty=True`.  

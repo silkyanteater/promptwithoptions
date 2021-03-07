@@ -248,21 +248,20 @@ def validate_arguments(
 
     if default is not None:
         if isinstance(default, str):
-            default_parts = split_escaped_comma_separated_string(default)
+            if allow_multiple is True:
+                default_parts = split_escaped_comma_separated_string(default)
+            else:
+                default_parts = (default,)
         elif isinstance(default, Iterable):
             default_parts = tuple(
                 "Y" if part is True else "N" if part is False else str(part)
                 for part in default
             )
         elif isinstance(default, bool):
-            default_parts = ("Y" if default is True else "N",)
+            default_parts = (normalise_bool_response(default),)
         else:
             default_parts = (
                 "Y" if default is True else "N" if default is False else str(default),
-            )
-        if allow_multiple is not True and len(default_parts) > 1:
-            raise TypeError(
-                f"default: multiple values found while allow_multiple is not True"
             )
         if allow_empty is not True and len(default_parts) == 0:
             raise TypeError(
@@ -437,7 +436,10 @@ def promptwithoptions(
             elif isinstance(default, Iterable) and not isinstance(default, str):
                 response = tuple(map(str, default))
             else:
-                response = split_escaped_comma_separated_string(str(default))
+                if allow_multiple is True:
+                    response = split_escaped_comma_separated_string(str(default))
+                else:
+                    response = (str(default),)
             break
         if response in ("", "-"):
             response = ""
@@ -447,7 +449,10 @@ def promptwithoptions(
             response = None
             clear_back_last_input()
             continue
-        response = split_escaped_comma_separated_string(response)
+        if allow_multiple is True:
+            response = split_escaped_comma_separated_string(response)
+        else:
+            response = (response,)
         if (
             response is None
             or len(response) == 0
