@@ -200,9 +200,9 @@ def clear_back_last_input():
 def split_escaped_comma_separated_string(the_string):
     try:
         splitter = shlex.shlex(the_string, posix=True)
-        splitter.whitespace += ","
+        splitter.whitespace = ","
         splitter.whitespace_split = True
-        return tuple(splitter)
+        return tuple(s.strip() for s in splitter)
     except ValueError:
         return None
 

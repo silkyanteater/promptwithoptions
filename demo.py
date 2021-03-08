@@ -38,9 +38,12 @@ set_prompt_defaults(show_confirmation=True)
 # set_prompt_defaults(hide_key=True, hide_mandatory_sign=True, hide_multiple_choice_sign=True)
 # set_prompt_defaults(show_confirmation='_None_')
 
+
 zone_options = {1: 'Header', 2: 'Main area', 3: 'Footer', '': 'Default'}
 
 choice('Zones', 'Zones', widget, options=zone_options, default=(1,2), allow_multiple=True)
+
+choice('Widget Type', 'Type', widget, allow_multiple=True, default="Whitish Blue")
 
 choice('Widget Type', 'Type', widget, options, default)
 
