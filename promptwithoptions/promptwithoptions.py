@@ -2,6 +2,8 @@ import sys
 import shlex
 from collections.abc import Iterable
 
+# TODO: add a field type that is free text but with options to make it more convenient
+
 
 ARGUMENT_NAMES = (
     "prompt",
@@ -78,15 +80,18 @@ def get_formatted_prompt(
         if isinstance(default, Iterable) and not isinstance(default, str):
             normalised_bool_default = tuple(map(normalise_value_to_YN, default))
         else:
-            normalised_bool_default = (str(default), )
+            normalised_bool_default = (str(default),)
         new_normalised_bool_default = tuple()
         for response_item in normalised_bool_default:
-            new_normalised_bool_default += tuple(normalise_value_to_YN(x) for x in split_escaped_comma_separated_string(response_item))
+            new_normalised_bool_default += tuple(
+                normalise_value_to_YN(x)
+                for x in split_escaped_comma_separated_string(response_item)
+            )
         normalised_bool_default = new_normalised_bool_default
         if len(normalised_bool_default) == 1:
-            if normalised_bool_default[0] == 'Y':
+            if normalised_bool_default[0] == "Y":
                 bool_choice = "Y/n"
-            elif normalised_bool_default[0] == 'N':
+            elif normalised_bool_default[0] == "N":
                 bool_choice = "y/N"
             else:
                 bool_choice = "y/n"
@@ -94,7 +99,9 @@ def get_formatted_prompt(
             bool_choice = "y/n"
         formatted_prompt = f"{formatted_prompt}({bool_choice}) "
         if len(normalised_bool_default) > 1:
-            formatted_prompt = f"{formatted_prompt}({','.join(normalised_bool_default)}) "
+            formatted_prompt = (
+                f"{formatted_prompt}({','.join(normalised_bool_default)}) "
+            )
     else:
         if default is not None:
             if isinstance(default, Iterable) and not isinstance(default, str):
@@ -296,12 +303,19 @@ def validate_arguments(
             )
         if allow_repetitive is not True:
             if options is not None:
-                normalised_default_parts = tuple(get_option(normalise_options(options), part) for part in default_parts)
+                normalised_default_parts = tuple(
+                    get_option(normalise_options(options), part)
+                    for part in default_parts
+                )
                 if len(normalised_default_parts) != len(set(normalised_default_parts)):
-                    raise TypeError(f"default: repetitive elements found when allow_repetitive is not True")
+                    raise TypeError(
+                        f"default: repetitive elements found when allow_repetitive is not True"
+                    )
             else:
                 if len(default_parts) != len(set(default_parts)):
-                    raise TypeError(f"default: repetitive elements found when allow_repetitive is not True")
+                    raise TypeError(
+                        f"default: repetitive elements found when allow_repetitive is not True"
+                    )
         invalid_parts = list()
         if options is None:
             if data_type is not None:
@@ -479,19 +493,26 @@ def promptwithoptions(
             if isinstance(default, Iterable) and not isinstance(default, str):
                 default_response = tuple(default)
             else:
-                default_response = (str(default), )
+                default_response = (str(default),)
             new_default_response = tuple()
             if data_type is bool:
-                new_default_response = tuple(normalise_value_to_YN(x) for x in default_response)
+                new_default_response = tuple(
+                    normalise_value_to_YN(x) for x in default_response
+                )
             else:
-                for response_item in default_response:
-                    new_default_response += split_escaped_comma_separated_string(str(response_item))
+                if allow_multiple is True:
+                    for response_item in default_response:
+                        new_default_response += split_escaped_comma_separated_string(
+                            str(response_item)
+                        )
+                else:
+                    new_default_response = default_response
             default_response = new_default_response
             if allow_multiple is not True and len(default_response) > 1:
                 response = None
                 clear_back_last_input()
                 continue
-            response = default_response or ''
+            response = default_response or ""
             break
         if response in ("", "-"):
             response = ""
@@ -522,7 +543,10 @@ def promptwithoptions(
                     continue_loop = True
                     break
                 else:
-                    if allow_repetitive is not True and response_item_bool in normalised_response:
+                    if (
+                        allow_repetitive is not True
+                        and response_item_bool in normalised_response
+                    ):
                         continue_loop = True
                         break
                     else:
@@ -562,14 +586,19 @@ def promptwithoptions(
                     continue
                 else:
                     response_options.append(response_option)
-            if allow_repetitive is not True and len(response_options) != len(set(response_options)):
+            if allow_repetitive is not True and len(response_options) != len(
+                set(response_options)
+            ):
                 response = None
                 clear_back_last_input()
                 continue
     if options is None:
         response_value = response
         if data_type is bool:
-            response_value_str = ", ".join('Yes' if v == 'Y' else 'No' if v == 'N' else 'N/A' for v in response_value)
+            response_value_str = ", ".join(
+                "Yes" if v == "Y" else "No" if v == "N" else "N/A"
+                for v in response_value
+            )
         else:
             response_value_str = ", ".join(response_value)
     else:

@@ -23,8 +23,8 @@ class CLR(object):
     l_cyan = '\u001b[36;1m'
     l_white = '\u001b[37;1m'
 
-def choice(field, key = None, widget = None, options = None, default = None, allow_empty = None, allow_multiple = None, allow_repetitive = None, hide_key = None):
-    result = promptwithoptions(field, options=options, default=default, allow_empty=allow_empty, allow_multiple=allow_multiple, allow_repetitive=allow_repetitive, hide_key=hide_key)
+def choice(field, key = None, widget = None, options = None, default = None, allow_empty = None, allow_multiple = None, allow_repetitive = None, hide_key = None, no_interaction = None):
+    result = promptwithoptions(field, options=options, default=default, allow_empty=allow_empty, allow_multiple=allow_multiple, allow_repetitive=allow_repetitive, hide_key=hide_key, no_interaction=no_interaction)
     if widget is not None:
         widget[key] = result
     print()
@@ -38,14 +38,19 @@ set_prompt_defaults(show_confirmation=True)
 # set_prompt_defaults(hide_key=True, hide_mandatory_sign=True, hide_multiple_choice_sign=True)
 # set_prompt_defaults(show_confirmation='_None_')
 
+# zone_options = {1: 'Header', 2: 'Main area', 3: 'Footer', '': 'Default'}
 
-zone_options = {1: 'Header', 2: 'Main area', 3: 'Footer', '': 'Default'}
+# choice('Zones', 'Zones', widget, options=zone_options, default=(1,2), allow_multiple=True)
 
-choice('Zones', 'Zones', widget, options=zone_options, default=(1,2), allow_multiple=True)
+# choice('Widget Type', 'Type', widget, allow_multiple=True, default="Whitish Blue")
 
-choice('Widget Type', 'Type', widget, allow_multiple=True, default="Whitish Blue")
+default = "{\"weekDay\":null,\"offset\":1,\"amount\":1}"
 
-choice('Widget Type', 'Type', widget, options, default)
+choice('Widget Type', 'Type', widget, default=default, no_interaction=True)
+
+print(widget)
+
+exit()
 
 choice('Name', 'Name', widget, default='asdf,asd', allow_empty=True, allow_multiple=True)
 
